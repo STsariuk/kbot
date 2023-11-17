@@ -14,15 +14,15 @@ import (
 )
 
 var (
-	// Tele Token bot
+	// TeleToken bot
 	TeleToken = os.Getenv("TELE_TOKEN")
 )
 
 // kbotCmd represents the kbot command
 var kbotCmd = &cobra.Command{
-	Use:   "kbot",
-	Aliases: []string{"start"},
-	Short: "A brief description of your command",
+	Use:     "kbot",
+	Aliases: []string{"go"},
+	Short:   "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -30,9 +30,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		fmt.Printf("kbot %s started", appVersion)
-
 		kbot, err := telebot.NewBot(telebot.Settings{
 			URL:    "",
 			Token:  TeleToken,
@@ -40,25 +38,59 @@ to quickly create a Cobra application.`,
 		})
 
 		if err != nil {
-			log.Fatalf("Please check TELE_TOKEN env variables. %s", err)
+			log.Fatalf("Please check TELE_TOKEN env variable. %s", err)
 			return
 		}
 
-		kbot.Handle(telebot.OnText, func(m telebot.Context) error {
-			
-			log.Print(m.Message().Payload, m.Text())
-			payload := m.Message().Payload
-
-			switch payload{
-			case "hello":
-				err = m.Send(fmt.Sprintf("Hello I'm Kbot %s!", appVersion))
+		kbot.Handle("/start", func(m telebot.Context) error {
+			menu := &telebot.ReplyMarkup{
+				ReplyKeyboard: [][]telebot.ReplyButton{
+					{{Text: "Hello"}, {Text: "Help"}},
+					{{Text: "Kyiv"}, {Text: "New-Yourk"}, {Text: "London"}},
+				},
 			}
-			
-			return err
+			return m.Send("Welcome to Kbot!", menu)
+		})
+
+		kbot.Handle(telebot.OnText, func(m telebot.Context) error {
+			switch m.Text() {
+			case "Hello":
+				return m.Send(fmt.Sprintf("Hi! I'm Kbot %s! And I know what time it is!", appVersion))
+			case "Help":
+				return m.Send("This is the help message. Here you can find out the current time in the locations of your partners and team members: Kyiv, Boston, London, Vienna, Tbilisi or Vancouver")
+			case "Kyiv":
+				return m.Send("Current time in Kyiv: " + getTime("Kyiv"))
+			case "Boston":
+				return m.Send("Current time in Boston: " + getTime("Boston"))
+			case "London":
+				return m.Send("Current time in London: " + getTime("London"))
+			default:
+				return m.Send("Unknown command. Please try again.")
+			}
 		})
 
 		kbot.Start()
 	},
+}
+
+func getTime(location string) string {
+	var locName string
+	switch location {
+	case "Kyiv":
+		locName = "Europe/Kiev"
+	case "Boston":
+		locName = "America/New_York"
+	case "London":
+		locName = "Europe/London"
+	default:
+		return "Invalid location"
+	}
+
+	loc, err := time.LoadLocation(locName)
+	if err != nil {
+		return "Invalid location"
+	}
+	return time.Now().In(loc).Format("15:04:05")
 }
 
 func init() {
