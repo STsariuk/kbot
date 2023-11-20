@@ -21,7 +21,7 @@ var (
 // kbotCmd represents the kbot command
 var kbotCmd = &cobra.Command{
 	Use:     "kbot",
-	Aliases: []string{"go"},
+	Aliases: []string{"start"},
 	Short:   "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -46,7 +46,8 @@ to quickly create a Cobra application.`,
 			menu := &telebot.ReplyMarkup{
 				ReplyKeyboard: [][]telebot.ReplyButton{
 					{{Text: "Hello"}, {Text: "Help"}},
-					{{Text: "Kyiv"}, {Text: "New-Yourk"}, {Text: "London"}},
+					{{Text: "Kyiv"}, {Text: "London"}, {Text: "New_York"}},
+					{{Text: "Tokyo"}, {Text: "Sydney"}},
 				},
 			}
 			return m.Send("Welcome to Kbot!", menu)
@@ -57,13 +58,17 @@ to quickly create a Cobra application.`,
 			case "Hello":
 				return m.Send(fmt.Sprintf("Hi! I'm Kbot %s! And I know what time it is!", appVersion))
 			case "Help":
-				return m.Send("This is the help message. Here you can find out the current time in the locations of your partners and team members: Kyiv, Boston, London, Vienna, Tbilisi or Vancouver")
+				return m.Send("This is the help message. Here you can find out the current time in the different time zones and continents: Kyiv(Eastern European Time), London(Greenwich Mean Time), New-York(America), Tokyo(Asia), Sydney(Australia)")
 			case "Kyiv":
 				return m.Send("Current time in Kyiv: " + getTime("Kyiv"))
-			case "Boston":
-				return m.Send("Current time in Boston: " + getTime("Boston"))
 			case "London":
 				return m.Send("Current time in London: " + getTime("London"))
+			case "New_York":
+				return m.Send("Current time in New-York: " + getTime("New_York"))
+			case "Tokyo":
+				return m.Send("Current time in Tokyo: " + getTime("Tokyo"))
+			case "Sydney":
+				return m.Send("Current time in Sydney: " + getTime("Sydney"))
 			default:
 				return m.Send("Unknown command. Please try again.")
 			}
@@ -78,10 +83,14 @@ func getTime(location string) string {
 	switch location {
 	case "Kyiv":
 		locName = "Europe/Kiev"
-	case "Boston":
-		locName = "America/New_York"
 	case "London":
 		locName = "Europe/London"
+	case "New_York":
+		locName = "America/New_York"
+	case "Tokyo":
+		locName = "Asia/Tokyo"
+	case "Sydney":
+		locName = "Australia/Sydney"
 	default:
 		return "Invalid location"
 	}
